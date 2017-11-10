@@ -9,6 +9,7 @@ var stylus = require('stylus')
 var index = require('./routes/index')
 var search = require('./routes/search')
 var user = require('./routes/users')
+var platformCount = require('./routes/platform_count')
 
 var app = express()
 
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/video_index', index)
 app.use('/search', search)
 app.use('/user', user)
+app.use('/platform_count', platformCount)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

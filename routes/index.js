@@ -47,7 +47,7 @@ router.get('/', function (req, res) {
         platform_name: item.platName.hits.hits[0]._source.platform_name
       })
     })
-    res.send(result)
+    res.send(data)
   })
 })
 // test
