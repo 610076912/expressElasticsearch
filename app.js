@@ -7,7 +7,7 @@ var bodyParser = require('body-parser')
 var stylus = require('stylus')
 
 var index = require('./routes/index')
-var search = require('./routes/search')
+var chart = require('./routes/chart')
 var user = require('./routes/users')
 var platformCount = require('./routes/platform_count')
 
@@ -29,8 +29,7 @@ app.use(stylus.middleware(path.join(__dirname, 'public')))
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/gk', index)
-app.use('/search', search)
-app.use('/user', user)
+app.use('/chart', chart)
 app.use('/data_list', platformCount)
 
 // catch 404 and forward to error handler

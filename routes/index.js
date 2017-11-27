@@ -115,7 +115,8 @@ router.get('/', function (req, res) {
         playCount,
         clickCount,
         pjbg: bgCount / playCount,
-        pjclick: clickCount / bgCount
+        pjclick: clickCount / bgCount,
+        dddd: 2
       },
       msg: 'success'
     }
