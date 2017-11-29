@@ -5,22 +5,22 @@ var router = express.Router()
 router.get('/', function (req, res) {
   let bgArr = []
   const platFormId = req.query.platform_id
-  const timeRange = req.query.time_range
+  let timeRange = null
+  if (req.query.time_range) {
+    timeRange = JSON.parse(req.query.time_range)
+  }
   const mediaName = req.query.media_name
   if (!platFormId) {
     res.send({code: 400, data: '', msg: 'platform_id字段错误'})
     return
   }
-  let queryTimeRange = 'now-1w'
-  switch (timeRange) {
-    case 2:
-      queryTimeRange = 'now-1M'
-      break
-    case 3:
-      queryTimeRange = 'now-3M'
-      break
-    default:
-      queryTimeRange = 'now-1w'
+  if (timeRange && timeRange.length !== 2) {
+    console.log(timeRange)
+    res.send({code: 400, data: '', msg: 'time_range 必须为包含两位时间对象的数组。'})
+    return
+  }
+  if (!timeRange) {
+    timeRange = ['now-1w/w', 'now']
   }
   client.search({
     index: 'sltlog_adseat_request_log-*',
@@ -32,7 +32,7 @@ router.get('/', function (req, res) {
             'bool': {
               'must': [
                 {'term': {'media_channel_id.keyword': platFormId}},
-                {'range': {'request_time': {'gte': queryTimeRange}}}
+                {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
               ]
             }
           }
@@ -54,7 +54,7 @@ router.get('/', function (req, res) {
     bgArr.forEach(item => {
       videoIdArr.push(item.key)
     })
-    console.log(bgArr)
+    // console.log(bgArr)
     // res.send(videoIdArr)
     Promise.all(
       [
@@ -102,7 +102,7 @@ router.get('/', function (req, res) {
                   'bool': {
                     'must': [
                       {'terms': {'video_id.keyword': videoIdArr}},
-                      {'range': {'request_time': {'gte': queryTimeRange}}}
+                      {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                     ]
                   }
                 }
@@ -127,7 +127,7 @@ router.get('/', function (req, res) {
                   'bool': {
                     'must': [
                       {'terms': {'video_id.keyword': videoIdArr}},
-                      {'range': {'request_time': {'gte': queryTimeRange}}}
+                      {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                     ]
                   }
                 }
@@ -201,7 +201,7 @@ router.get('/', function (req, res) {
       })
       let resData = {code: 200, data: '', msg: 'success'}
       resData.data = mediaName ? resArrName : bgArr
-      res.send(resData)
+      res.send(data)
     })
   }).catch(err => {
     res.send(err)
