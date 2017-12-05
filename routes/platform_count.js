@@ -201,7 +201,7 @@ router.get('/', function (req, res) {
       })
       let resData = {code: 200, data: '', msg: 'success'}
       resData.data = mediaName ? resArrName : bgArr
-      res.send(data)
+      res.send(resData)
     })
   }).catch(err => {
     res.send(err)
