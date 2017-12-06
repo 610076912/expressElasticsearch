@@ -1,6 +1,8 @@
 var client = require('../elastic-config/config').client
 var express = require('express')
 var router = express.Router()
+const tools = require('../components/creat-dayarr')
+var dateFormat = require('dateformat')
 
 router.get('/', function (req, res) {
   const platFormId = req.query.platform_id
@@ -8,13 +10,11 @@ router.get('/', function (req, res) {
   if (req.query.time_range) {
     timeRange = JSON.parse(req.query.time_range)
   }
-  console.log(req.query.time_range)
   if (!platFormId) {
     res.send({code: 400, data: '', msg: 'platform_id字段错误'})
     return
   }
   if (timeRange && timeRange.length !== 2) {
-    console.log(timeRange)
     res.send({code: 400, data: '', msg: 'time_range 必须为包含两位时间对象的数组。'})
     return
   }
@@ -103,11 +103,10 @@ router.get('/', function (req, res) {
       })
     ]
   ).then(data => {
-    // console.log(data)
-    let bgCount = data[0].aggregations.bgCount.buckets[0].doc_count ? data[0].aggregations.bgCount.buckets[0].doc_count : 0
-    let playCount = data[1].aggregations.playCount.buckets[0].doc_count ? data[1].aggregations.playCount.buckets[0].doc_count : 0
-    let clickCount = data[2].aggregations.clickCount.buckets[0].doc_count ? data[2].aggregations.clickCount.buckets[0].doc_count : 0
-    // console.log(bgCount, playCount, clickCount)
+    // res.send(data)
+    let bgCount = data[0].aggregations.bgCount.buckets.length !== 0 ? data[0].aggregations.bgCount.buckets[0].doc_count : 0
+    let playCount = data[1].aggregations.playCount.buckets.length !== 0 ? data[1].aggregations.playCount.buckets[0].doc_count : 0
+    let clickCount = data[2].aggregations.clickCount.buckets.length !== 0 ? data[2].aggregations.clickCount.buckets[0].doc_count : 0
     let resData = {
       code: 200,
       data: {
@@ -132,9 +131,16 @@ router.get('/chart', function (req, res) {
   let timeRange = null
   if (req.query.time_range) {
     timeRange = JSON.parse(req.query.time_range)
+  } else {
+    // 默认最近一周
+    let end = new Date().getTime()
+    let start = new Date().setHours(0, 0, 0, 0)
+    start = new Date().setTime(start - 3600 * 1000 * 24 * 6)
+    timeRange = [start, end]
   }
+  let dayArr = tools.creatDateArr(timeRange)
   // let timeRange = JSON.parse(req.query.time_range)
-  console.log(req.query.time_range)
+  // (req.query.time_range)
   // console.log(platFormId)
   if (!platFormId) {
     res.send({code: 400, data: '', msg: 'platform_id字段错误'})
@@ -143,9 +149,6 @@ router.get('/chart', function (req, res) {
   if (timeRange && timeRange.length !== 2) {
     res.send({code: 400, data: '', msg: 'time_range 必须为包含两位时间对象的数组。'})
     return
-  }
-  if (!timeRange) {
-    timeRange = ['now-1w/w', 'now']
   }
   Promise.all([
     client.search({
@@ -275,15 +278,14 @@ router.get('/chart', function (req, res) {
       }
     })
   ]).then(data => {
-
     data[0].aggregations.aggsArr.buckets.forEach(item => {
       item.play_count = item.doc_count ? item.doc_count : 0
-      item.day_time = item.key_as_string
+      item.day_time = dateFormat(item.key_as_string, 'isoDate')
       data[1].aggregations.aggsArr.buckets.forEach(pItem => {
         if (item.key === pItem.key) {
           item.bg_count = pItem.doc_count ? pItem.doc_count : 0
-          item.play_count = item.doc_count ? item.doc_count : 0
-          item.day_time = item.key_as_string
+          // item.play_count = item.doc_count ? item.doc_count : 0
+          // item.day_time = item.key_as_string
           item.pjbg = item.bg_count === 0 ? 0 : item.bg_count / item.play_count
         }
       })
@@ -297,7 +299,18 @@ router.get('/chart', function (req, res) {
       delete item.key_as_string
       delete item.doc_count
     })
-    const resArr = {code: 200, data: data[0].aggregations.aggsArr.buckets, msg: 'success'}
+    dayArr.forEach(day => {
+      data[0].aggregations.aggsArr.buckets.forEach(ir => {
+        if (day.day_time === ir.day_time) {
+          day.play_count = ir.play_count ? ir.play_count : 0
+          day.bg_count = ir.bg_count ? ir.bg_count : 0
+          day.pjbg = ir.pjbg ? ir.pjbg : 0
+          day.click_count = ir.click_count ? ir.click_count : 0
+          day.pjclick = ir.pjclick ? ir.pjclick : 0
+        }
+      })
+    })
+    const resArr = {code: 200, data: dayArr, msg: 'success'}
     res.send(resArr)
   }).catch(err => {
     const resArr = {code: 300, data: err, msg: 'error'}
