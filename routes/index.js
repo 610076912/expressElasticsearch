@@ -141,13 +141,12 @@ router.get('/chart', function (req, res) {
   let dayArr = tools.creatDateArr(timeRange)
   // let timeRange = JSON.parse(req.query.time_range)
   // (req.query.time_range)
-  // console.log(platFormId)
   if (!platFormId) {
     res.send({code: 400, data: '', msg: 'platform_id字段错误'})
     return
   }
   if (timeRange && timeRange.length !== 2) {
-    res.send({code: 400, data: '', msg: 'time_range 必须为包含两位时间对象的数组。'})
+    res.send({code: 400, data: '', msg: 'time_range 必须为包含两位时间戳的数组。'})
     return
   }
   Promise.all([
@@ -299,6 +298,10 @@ router.get('/chart', function (req, res) {
       delete item.key_as_string
       delete item.doc_count
     })
+    if (dayArr.length === 0) {
+      res.send({code: 400, data: '', msg: 'time_range参数错误'})
+      return
+    }
     dayArr.forEach(day => {
       data[0].aggregations.aggsArr.buckets.forEach(ir => {
         if (day.day_time === ir.day_time) {

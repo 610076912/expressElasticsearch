@@ -3,6 +3,11 @@ var express = require('express')
 var router = express.Router()
 
 router.get('/', function (req, res) {
+  /*
+  * @param platform_id 平台id
+  * @param time_range 时间间隔
+  * @param page_num 页数（默认为第一页）
+  * */
   let bgArr = []
   const platFormId = req.query.platform_id
   let timeRange = null
@@ -41,15 +46,17 @@ router.get('/', function (req, res) {
       'aggs': {
         'mediaId': {
           'terms': {
-            'field': 'video_id.keyword'
+            'field': 'video_id.keyword',
+            'size': 10000
           }
         }
       }
     }
   }).then(data => {
-    // res.send(data)
+    res.send(data)
     let videoIdArr = []
     let resArrName = []
+    // res.send(data)
     bgArr = data.aggregations.mediaId.buckets
     bgArr.forEach(item => {
       videoIdArr.push(item.key)
@@ -78,13 +85,13 @@ router.get('/', function (req, res) {
             'aggs': {
               'mediaInfo': {
                 'terms': {
-                  'field': 'video_id.keyword',
-                  'size': 10
+                  'field': 'video_id.keyword'
                 },
                 'aggs': {
                   'mediaName': {
                     'top_hits': {
-                      '_source': ['media_name', 'media_id']
+                      '_source': ['media_name', 'media_id'],
+                      'size': 1
                     }
                   }
                 }
@@ -165,7 +172,7 @@ router.get('/', function (req, res) {
         data[1].aggregations.mediaInfo.buckets.forEach(pItem => {
           if (item.video_id === pItem.key) {
             item.bg_count = pItem.doc_count
-            item.pjbg = item.bg_count / item.bg_count
+            item.pjbg = item.bg_count / item.playCount
           }
         })
         data[2].aggregations.mediaInfo.buckets.forEach(cItem => {
@@ -201,7 +208,7 @@ router.get('/', function (req, res) {
       })
       let resData = {code: 200, data: '', msg: 'success'}
       resData.data = mediaName ? resArrName : bgArr
-      res.send(resData)
+      // res.send(resData)
     })
   }).catch(err => {
     res.send(err)

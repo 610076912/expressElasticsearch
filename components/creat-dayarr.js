@@ -1,10 +1,10 @@
 var dateFormat = require('dateformat')
-
+// todo 在分页完成后，将表格数据统计中的时间段改为elasticsearch创造空数据。
 function creatDateArr (arr) {
   // const dateArr = JSON.parse(arr)
   const dateArr = arr
   if (!Array.isArray(dateArr) || dateArr.length !== 2) {
-    return undefined
+    return new Error('time_range字段错误')
   }
   // const sTime = new Date(dateArr[0]).getTime()
   // const eTime = new Date(dateArr[1]).getTime()
