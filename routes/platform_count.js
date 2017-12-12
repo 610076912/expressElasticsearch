@@ -8,8 +8,20 @@ router.get('/', function (req, res) {
   * @param time_range 时间间隔
   * @param page_num 页数（默认为第一页）
   * */
+  // 每页10条数据
+  const pageCount = 10
+  // 总条目数
+  let total = 0
   let bgArr = []
   const platFormId = req.query.platform_id
+  let pageNum = req.query.page_num * 1
+
+  if (pageNum && typeof pageNum !== 'number') {
+    res.send({code: 400, data: '', msg: 'page_num错误'})
+  } else if (!pageNum) {
+    pageNum = 1
+  }
+
   let timeRange = null
   if (req.query.time_range) {
     timeRange = JSON.parse(req.query.time_range)
@@ -53,11 +65,12 @@ router.get('/', function (req, res) {
       }
     }
   }).then(data => {
-    res.send(data)
     let videoIdArr = []
     let resArrName = []
     // res.send(data)
-    bgArr = data.aggregations.mediaId.buckets
+    bgArr = data.aggregations.mediaId.buckets.slice((pageNum - 1) * pageCount, (pageNum * pageCount))
+    // res.send(bgArr)
+    total = data.aggregations.mediaId.buckets.length
     bgArr.forEach(item => {
       videoIdArr.push(item.key)
     })
@@ -206,9 +219,9 @@ router.get('/', function (req, res) {
         //   }
         // })
       })
-      let resData = {code: 200, data: '', msg: 'success'}
+      let resData = {code: 200, data: '', totalPage: total, msg: 'success'}
       resData.data = mediaName ? resArrName : bgArr
-      // res.send(resData)
+      res.send(resData)
     })
   }).catch(err => {
     res.send(err)
