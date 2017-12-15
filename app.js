@@ -10,6 +10,7 @@ var index = require('./routes/index')
 var chart = require('./routes/chart')
 var user = require('./routes/users')
 var platformCount = require('./routes/platform_count')
+var test = require('./routes/test')
 
 var app = express()
 var cors = require('cors')
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/gk', index)
 app.use('/chart', chart)
 app.use('/data_list', platformCount)
+app.use('/test', test)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
