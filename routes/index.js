@@ -33,7 +33,7 @@ router.get('/', function (req, res) {
               'filter': {
                 'bool': {
                   'must': [
-                    {'term': {'media_channel_id.keyword': platFormId}},
+                    {'term': {'media_channel_id': platFormId}},
                     {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                   ]
                 }
@@ -43,7 +43,7 @@ router.get('/', function (req, res) {
           'aggs': {
             'bgCount': {
               'terms': {
-                'field': 'media_channel_id.keyword'
+                'field': 'media_channel_id'
               }
             }
           }
@@ -59,7 +59,7 @@ router.get('/', function (req, res) {
               'filter': {
                 'bool': {
                   'must': [
-                    {'term': {'media_channel_id.keyword': platFormId}},
+                    {'term': {'media_channel_id': platFormId}},
                     {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                   ]
                 }
@@ -69,7 +69,7 @@ router.get('/', function (req, res) {
           'aggs': {
             'playCount': {
               'terms': {
-                'field': 'media_channel_id.keyword'
+                'field': 'media_channel_id'
               }
             }
           }
@@ -85,7 +85,7 @@ router.get('/', function (req, res) {
               'filter': {
                 'bool': {
                   'must': [
-                    {'term': {'media_channel_id.keyword': platFormId}},
+                    {'term': {'media_channel_id': platFormId}},
                     {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                   ]
                 }
@@ -95,7 +95,7 @@ router.get('/', function (req, res) {
           'aggs': {
             'clickCount': {
               'terms': {
-                'field': 'media_channel_id.keyword'
+                'field': 'media_channel_id'
               }
             }
           }
@@ -129,7 +129,7 @@ router.get('/', function (req, res) {
 router.get('/chart', function (req, res) {
   const platFormId = req.query.platform_id
   let timeRange = null
-  if (req.query.time_range) {
+  if (req.query.time_range && Array.isArray(req.query.time_range)) {
     timeRange = JSON.parse(req.query.time_range)
   } else {
     // 默认最近一周
@@ -316,7 +316,7 @@ router.get('/chart', function (req, res) {
     const resArr = {code: 200, data: dayArr, msg: 'success'}
     res.send(resArr)
   }).catch(err => {
-    const resArr = {code: 300, data: err, msg: 'error'}
+    const resArr = {code: 300, data: err, msg: err}
     res.send(resArr)
   })
 })

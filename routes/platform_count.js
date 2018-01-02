@@ -48,7 +48,7 @@ router.get('/', function (req, res) {
           'filter': {
             'bool': {
               'must': [
-                {'term': {'media_channel_id.keyword': platFormId}},
+                {'term': {'media_channel_id': platFormId}},
                 {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
               ]
             }
@@ -58,7 +58,7 @@ router.get('/', function (req, res) {
       'aggs': {
         'mediaId': {
           'terms': {
-            'field': 'video_id.keyword',
+            'field': 'video_id',
             'size': 10000
           }
         }
@@ -90,7 +90,7 @@ router.get('/', function (req, res) {
               'constant_score': {
                 'filter': {
                   'terms': {
-                    'video_id.keyword': videoIdArr
+                    'video_id': videoIdArr
                   }
                 }
               }
@@ -98,7 +98,7 @@ router.get('/', function (req, res) {
             'aggs': {
               'mediaInfo': {
                 'terms': {
-                  'field': 'video_id.keyword'
+                  'field': 'video_id'
                 },
                 'aggs': {
                   'mediaName': {
@@ -113,7 +113,7 @@ router.get('/', function (req, res) {
           }
         }),
         client.search({
-          index: 'sltlog_ad_bg_log*',
+          index: 'sltlog_ad_bg_log-*',
           body: {
             'size': 0,
             'query': {
@@ -121,7 +121,7 @@ router.get('/', function (req, res) {
                 'filter': {
                   'bool': {
                     'must': [
-                      {'terms': {'video_id.keyword': videoIdArr}},
+                      {'terms': {'video_id': videoIdArr}},
                       {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                     ]
                   }
@@ -131,14 +131,14 @@ router.get('/', function (req, res) {
             'aggs': {
               'mediaInfo': {
                 'terms': {
-                  'field': 'video_id.keyword'
+                  'field': 'video_id'
                 }
               }
             }
           }
         }),
         client.search({
-          index: 'sltlog_ad_click_log*',
+          index: 'sltlog_ad_click_log-*',
           body: {
             'size': 0,
             'query': {
@@ -146,7 +146,7 @@ router.get('/', function (req, res) {
                 'filter': {
                   'bool': {
                     'must': [
-                      {'terms': {'video_id.keyword': videoIdArr}},
+                      {'terms': {'video_id': videoIdArr}},
                       {'range': {'request_time': {'from': timeRange[0], 'to': timeRange[1]}}}
                     ]
                   }
@@ -156,7 +156,7 @@ router.get('/', function (req, res) {
             'aggs': {
               'mediaInfo': {
                 'terms': {
-                  'field': 'video_id.keyword'
+                  'field': 'video_id'
                 }
               }
             }
